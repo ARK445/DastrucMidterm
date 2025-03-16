@@ -21,6 +21,9 @@ public class LoginFrame extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new GridBagLayout());
 
+        // Set background color
+        getContentPane().setBackground(new Color(18, 18, 18));
+
         adminAccounts.put("admin", "admin123"); // Default admin credentials
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -28,23 +31,37 @@ public class LoginFrame extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         gbc.gridx = 0; gbc.gridy = 0;
-        add(new JLabel("Username:"), gbc);
+        JLabel usernameLabel = new JLabel("Username:");
+        usernameLabel.setForeground(Color.WHITE);
+        add(usernameLabel, gbc);
         gbc.gridx = 1;
         usernameField = new JTextField(15);
+        usernameField.setBackground(new Color(40, 40, 40));
+        usernameField.setForeground(Color.WHITE);
+        usernameField.setCaretColor(Color.WHITE);
         add(usernameField, gbc);
 
         gbc.gridx = 0; gbc.gridy = 1;
-        add(new JLabel("Password:"), gbc);
+        JLabel passwordLabel = new JLabel("Password:");
+        passwordLabel.setForeground(Color.WHITE);
+        add(passwordLabel, gbc);
         gbc.gridx = 1;
         passwordField = new JPasswordField(15);
+        passwordField.setBackground(new Color(40, 40, 40));
+        passwordField.setForeground(Color.WHITE);
+        passwordField.setCaretColor(Color.WHITE);
         add(passwordField, gbc);
 
         gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
         JButton loginButton = new JButton("Login");
+        loginButton.setBackground(new Color(29, 185, 84)); // Spotify green
+        loginButton.setForeground(Color.WHITE);
+        loginButton.setFocusPainted(false);
         add(loginButton, gbc);
 
         gbc.gridy = 3;
         statusLabel = new JLabel("", SwingConstants.CENTER);
+        statusLabel.setForeground(Color.WHITE);
         add(statusLabel, gbc);
 
         LoginHandler loginHandle = new LoginHandler();
@@ -63,12 +80,10 @@ public class LoginFrame extends JFrame {
 
             if (adminAccounts.containsKey(username) && adminAccounts.get(username).equals(password)) {
                 JOptionPane.showMessageDialog(LoginFrame.this, "Welcome, Admin!", "Login Successful", JOptionPane.INFORMATION_MESSAGE);
-
                 SwingUtilities.invokeLater(() -> new EnrollmentFrame().setVisible(true));
                 dispose();
             } else if (studentAccounts.containsKey(username) && studentAccounts.get(username).equals(password)) {
                 JOptionPane.showMessageDialog(LoginFrame.this, "Welcome, " + username + "!", "Login Successful", JOptionPane.INFORMATION_MESSAGE);
-
                 SwingUtilities.invokeLater(() -> new EnrollmentFrame().setVisible(true));
                 dispose();
             } else {
