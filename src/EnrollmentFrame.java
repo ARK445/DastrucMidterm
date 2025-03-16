@@ -48,6 +48,7 @@ public class EnrollmentFrame extends JFrame {
         JButton enrollButton = new JButton("Enroll");
         JButton clearButton = new JButton("Clear Fields");
         JButton loginButton = new JButton("Student Login");
+        JButton logoutButton = new JButton("Logout"); // Add logout button
         outputArea = new JTextArea(10, 40);
         outputArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(outputArea);
@@ -85,6 +86,8 @@ public class EnrollmentFrame extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 5;
         panel.add(loginButton, gbc);
+        gbc.gridx = 1;
+        panel.add(logoutButton, gbc); // Add logout button to the layout
 
         gbc.gridwidth = 2;
         gbc.gridx = 0;
@@ -94,8 +97,23 @@ public class EnrollmentFrame extends JFrame {
         enrollButton.addActionListener(new EnrollmentHandler());
         clearButton.addActionListener(e -> clearFields());
         loginButton.addActionListener(e -> showStudentLoginDialog());
+        logoutButton.addActionListener(e -> logout());
 
         return panel;
+    }
+
+    private void logout() {
+        int option = JOptionPane.showConfirmDialog(
+                this,
+                "Are you sure you want to logout?",
+                "Confirm Logout",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (option == JOptionPane.YES_OPTION) {
+            dispose();
+            SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
+        }
     }
 
     private JPanel createStudentListPanel() {
@@ -268,7 +286,11 @@ public class EnrollmentFrame extends JFrame {
             add(new JScrollPane(subjectArea), BorderLayout.CENTER);
 
             JButton logoutButton = new JButton("Logout");
-            logoutButton.addActionListener(e -> dispose());
+            logoutButton.addActionListener(e -> {
+                dispose();
+                EnrollmentFrame.this.dispose();
+                SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
+            });
             add(logoutButton, BorderLayout.SOUTH);
 
             setLocationRelativeTo(null);
