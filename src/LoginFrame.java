@@ -47,7 +47,11 @@ public class LoginFrame extends JFrame {
         statusLabel = new JLabel("", SwingConstants.CENTER);
         add(statusLabel, gbc);
 
-        loginButton.addActionListener(new LoginHandler());
+        LoginHandler loginHandle = new LoginHandler();
+
+        loginButton.addActionListener(loginHandle);
+        usernameField.addActionListener(loginHandle);
+        passwordField.addActionListener(loginHandle);
 
         pack();
     }
