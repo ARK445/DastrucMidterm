@@ -17,6 +17,7 @@ public class EnrollmentFrame extends JFrame {
     private static Map<String, String[]> subjects = new HashMap<>();
     private static Map<String, String> studentPasswords = new HashMap<>();
     private static Map<String, String> studentYearLevels = new HashMap<>();
+    private static Map<String, String> studentUsernames = new HashMap<>();
 
     public EnrollmentFrame() {
         setTitle("University of Cebu - Enrollment System");
@@ -142,14 +143,42 @@ public class EnrollmentFrame extends JFrame {
                 return;
             }
 
+            String username = generateUsername(name);
             String password = UUID.randomUUID().toString().substring(0, 8);
-            enrolledStudents.add(name);
-            studentPasswords.put(name, password);
-            studentYearLevels.put(name, yearLevel);
 
-            outputArea.setText("Enrollment Successful!\nName: " + name + "\nAge: " + ageText + "\nYear Level: " + yearLevel +
+            enrolledStudents.add(name);
+            studentUsernames.put(name, username);
+            studentPasswords.put(username, password);
+            studentYearLevels.put(username, yearLevel);
+
+            outputArea.setText("Enrollment Successful!\nName: " + name +
+                    "\nAge: " + ageText +
+                    "\nYear Level: " + yearLevel +
+                    "\n Enrolled Subjects: " + getSubjects(yearLevel) +
+                    "\nGenerated Username: " + username +
                     "\nGenerated Password: " + password);
         }
+
+        private String getSubjects(String yearLevel) {
+            String[] subjectList = subjects.getOrDefault(yearLevel, new String[]{"No subjects found."});
+            StringBuilder sb = new StringBuilder();
+            for (String subject : subjectList) {
+                sb.append("- ").append(subject).append("\n");
+            }
+            return sb.toString();
+        }
+    }
+
+    private String generateUsername(String name) {
+        // Remove spaces, convert to lowercase, and add a random number
+        String baseName = name.toLowerCase().replaceAll("\\s+", "");
+        // Limit to 8 characters if too long
+        if (baseName.length() > 8) {
+            baseName = baseName.substring(0, 8);
+        }
+        // Add a random 3-digit number to ensure uniqueness
+        int randomNum = 100 + (int)(Math.random() * 900);
+        return baseName + randomNum;
     }
 
     private void showStudentLoginDialog() {
@@ -162,15 +191,15 @@ public class EnrollmentFrame extends JFrame {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JTextField nameInput = new JTextField(15);
+        JTextField usernameInput = new JTextField(15);
         JPasswordField passwordInput = new JPasswordField(15);
         JButton loginButton = new JButton("Login");
 
         gbc.gridx = 0;
         gbc.gridy = 0;
-        loginDialog.add(new JLabel("Name:"), gbc);
+        loginDialog.add(new JLabel("Username:"), gbc);
         gbc.gridx = 1;
-        loginDialog.add(nameInput, gbc);
+        loginDialog.add(usernameInput, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -183,16 +212,32 @@ public class EnrollmentFrame extends JFrame {
         loginDialog.add(loginButton, gbc);
 
         loginButton.addActionListener(e -> {
-            String name = nameInput.getText().trim();
+            String username = usernameInput.getText().trim();
             String password = new String(passwordInput.getPassword());
 
-            if (studentPasswords.containsKey(name) && studentPasswords.get(name).equals(password) && enrolledStudents.contains(name)) {
-                new StudentDashboard(name, studentYearLevels.get(name));
-                loginDialog.dispose();
+            if (studentPasswords.containsKey(username) && studentPasswords.get(username).equals(password)) {
+                // Find the name associated with this username
+                String studentName = "";
+                for (Map.Entry<String, String> entry : studentUsernames.entrySet()) {
+                    if (entry.getValue().equals(username)) {
+                        studentName = entry.getKey();
+                        break;
+                    }
+                }
+
+                if (!studentName.isEmpty() && enrolledStudents.contains(studentName)) {
+                    new StudentDashboard(studentName, studentYearLevels.get(username));
+                    loginDialog.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(loginDialog, "Student record not found!", "Login Failed", JOptionPane.ERROR_MESSAGE);
+                }
             } else {
-                JOptionPane.showMessageDialog(loginDialog, "Invalid credentials or not enrolled!", "Login Failed", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(loginDialog, "Invalid username or password!", "Login Failed", JOptionPane.ERROR_MESSAGE);
             }
         });
+
+        usernameInput.addActionListener(e -> loginButton.doClick());
+        passwordInput.addActionListener(e -> loginButton.doClick());
 
         loginDialog.setVisible(true);
     }
