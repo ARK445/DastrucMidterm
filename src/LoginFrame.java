@@ -53,13 +53,27 @@ public class LoginFrame extends JFrame {
         add(passwordField, gbc);
 
         gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
-        JButton loginButton = new JButton("Login");
+        JButton loginButton = new JButton("Admin Login");
         loginButton.setBackground(new Color(29, 185, 84)); // Spotify green
         loginButton.setForeground(Color.WHITE);
         loginButton.setFocusPainted(false);
         add(loginButton, gbc);
 
         gbc.gridy = 3;
+        JButton guestButton = new JButton("Guest Login");
+        guestButton.setBackground(new Color(29, 185, 84)); // Spotify green
+        guestButton.setForeground(Color.WHITE);
+        guestButton.setFocusPainted(false);
+        add(guestButton, gbc);
+
+        gbc.gridy = 4;
+        JButton studentLoginButton = new JButton("Student Login");
+        studentLoginButton.setBackground(new Color(29, 185, 84)); // Spotify green
+        studentLoginButton.setForeground(Color.WHITE);
+        studentLoginButton.setFocusPainted(false);
+        add(studentLoginButton, gbc);
+
+        gbc.gridy = 5;
         statusLabel = new JLabel("", SwingConstants.CENTER);
         statusLabel.setForeground(Color.WHITE);
         add(statusLabel, gbc);
@@ -70,6 +84,44 @@ public class LoginFrame extends JFrame {
         usernameField.addActionListener(loginHandle);
         passwordField.addActionListener(loginHandle);
 
+        // Guest Login Button Action
+        guestButton.addActionListener(e -> {
+            // Open the EnrollmentFrame in guest mode
+            SwingUtilities.invokeLater(() -> {
+                new EnrollmentFrame(false).setVisible(true); // false = guest mode
+                dispose();
+            });
+        });
+
+        // Student Login Button Action
+        studentLoginButton.addActionListener(e -> {
+            // Open the Student Dashboard directly
+            SwingUtilities.invokeLater(() -> {
+                String username = usernameField.getText().trim();
+                String password = new String(passwordField.getPassword());
+
+                if (studentAccounts.containsKey(username) && studentAccounts.get(username).equals(password)) {
+                    // Find the student's name
+                    String studentName = "";
+                    for (Map.Entry<String, String> entry : EnrollmentFrame.studentUsernames.entrySet()) {
+                        if (entry.getValue().equals(username)) {
+                            studentName = entry.getKey();
+                            break;
+                        }
+                    }
+
+                    if (!studentName.isEmpty() && EnrollmentFrame.enrolledStudents.contains(studentName)) {
+                        new EnrollmentFrame.StudentDashboard(studentName, EnrollmentFrame.studentYearLevels.get(username));
+                        dispose();
+                    } else {
+                        JOptionPane.showMessageDialog(LoginFrame.this, "Student record not found!", "Login Failed", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(LoginFrame.this, "Invalid username or password!", "Login Failed", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+        });
+
         pack();
     }
 
@@ -78,15 +130,19 @@ public class LoginFrame extends JFrame {
             String username = usernameField.getText().trim();
             String password = new String(passwordField.getPassword());
 
+            // Check if the credentials belong to an admin
             if (adminAccounts.containsKey(username) && adminAccounts.get(username).equals(password)) {
                 JOptionPane.showMessageDialog(LoginFrame.this, "Welcome, Admin!", "Login Successful", JOptionPane.INFORMATION_MESSAGE);
-                SwingUtilities.invokeLater(() -> new EnrollmentFrame().setVisible(true));
+                SwingUtilities.invokeLater(() -> new EnrollmentFrame(true).setVisible(true)); // true = admin mode
                 dispose();
-            } else if (studentAccounts.containsKey(username) && studentAccounts.get(username).equals(password)) {
-                JOptionPane.showMessageDialog(LoginFrame.this, "Welcome, " + username + "!", "Login Successful", JOptionPane.INFORMATION_MESSAGE);
-                SwingUtilities.invokeLater(() -> new EnrollmentFrame().setVisible(true));
-                dispose();
-            } else {
+            }
+            // Check if the credentials belong to a student
+            else if (studentAccounts.containsKey(username) && studentAccounts.get(username).equals(password)) {
+                // Deny access if a student tries to log in as admin
+                JOptionPane.showMessageDialog(LoginFrame.this, "Students cannot log in as admin.", "Login Denied", JOptionPane.ERROR_MESSAGE);
+            }
+            // Invalid credentials
+            else {
                 statusLabel.setText("Invalid credentials. Try again.");
                 JOptionPane.showMessageDialog(LoginFrame.this, "Invalid username or password.", "Login Failed", JOptionPane.ERROR_MESSAGE);
             }

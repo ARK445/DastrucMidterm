@@ -12,14 +12,21 @@ public class EnrollmentFrame extends JFrame {
     private JTextField nameField, ageField;
     private JComboBox<String> studentTypeBox, yearLevelBox;
     private JTextArea outputArea;
-    private static List<String> enrolledStudents = new ArrayList<>();
-    private static Map<String, String[]> subjects = new HashMap<>();
-    private static Map<String, String> studentPasswords = new HashMap<>();
-    private static Map<String, String> studentYearLevels = new HashMap<>();
-    private static Map<String, String> studentUsernames = new HashMap<>();
-    private static Map<String, Map<String, Double>> studentGrades = new HashMap<>();
+    protected static List<String> enrolledStudents = new ArrayList<>();
+    protected static Map<String, String[]> subjects = new HashMap<>();
+    protected static Map<String, String> studentPasswords = new HashMap<>();
+    protected static Map<String, String> studentYearLevels = new HashMap<>();
+    protected static Map<String, String> studentUsernames = new HashMap<>();
+    protected static Map<String, Map<String, Double>> studentGrades = new HashMap<>();
 
-    public EnrollmentFrame() {
+    // Add a reference to the studentBox in the Grades Panel
+    private JComboBox<String> studentBox;
+
+    // Track if the user is an admin or guest
+    private boolean isAdmin;
+
+    public EnrollmentFrame(boolean isAdmin) {
+        this.isAdmin = isAdmin; // Set admin/guest mode
         setTitle("University of Cebu - Enrollment System");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -39,6 +46,20 @@ public class EnrollmentFrame extends JFrame {
 
         add(tabbedPane, BorderLayout.CENTER);
         setLocationRelativeTo(null);
+
+        // Disable certain features for guest users
+        if (!isAdmin) {
+            disableAdminFeatures();
+        }
+    }
+
+    // Disable admin-only features for guest users
+    private void disableAdminFeatures() {
+        nameField.setEditable(false);
+        ageField.setEditable(false);
+        studentTypeBox.setEnabled(false);
+        yearLevelBox.setEnabled(false);
+        outputArea.setText("Guest users cannot enroll students.");
     }
 
     private JPanel createEnrollmentPanel() {
@@ -144,7 +165,7 @@ public class EnrollmentFrame extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // Dropdown for selecting a student
-        JComboBox<String> studentBox = new JComboBox<>();
+        studentBox = new JComboBox<>(); // Initialize the studentBox
         studentBox.setBackground(new Color(40, 40, 40));
         studentBox.setForeground(Color.WHITE);
 
@@ -263,7 +284,15 @@ public class EnrollmentFrame extends JFrame {
         }
     }
 
-    private String getGradesForStudent(String username) {
+    // Method to update the studentBox dropdown dynamically
+    public void refreshStudentBox() {
+        if (studentBox != null) {
+            updateStudentBox(studentBox);
+        }
+    }
+
+    // Make this method static to fix the bug
+    public static String getGradesForStudent(String username) {
         Map<String, Double> grades = studentGrades.getOrDefault(username, new HashMap<>());
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, Double> entry : grades.entrySet()) {
@@ -299,77 +328,47 @@ public class EnrollmentFrame extends JFrame {
     }
 
     private void initializeSubjects() {
-        // First Year Subjects
+        // First Year Subjects (First Semester Only)
         subjects.put("First Year", new String[]{
                 "ENGL 100 - Communication Arts",
-                "ENGL 101 - Purposive Communication",
                 "SOCIO 102 - Gender and Society",
-                "ENTREP 101 - The Entrepreneurial Mind",
                 "MATH 100 - College Mathematics",
-                "MATH 101 - Mathematics in the Modern World",
                 "PSYCH 101 - Understanding the Self",
-                "HIST 101 - Readings in Philippine History",
                 "CC-INTCOM11 - Introduction to Computing",
-                "HUM 101 - Art Appreciation",
                 "CC-COMPROG11 - Computer Programming 1",
-                "CC-COMPROG12 - Computer Programming 2",
-                "IT-WEBDEV11 - Web Design & Development",
-                "CC-DISCRET12 - Discrete Structures",
                 "PE 101 - Movement Competency Training (PATHFit 1)",
-                "PE 102 - Exercise-based Fitness Activities (PATHFit 2)",
-                "NSTP 101 - National Service Training Program 1",
-                "NSTP 102 - National Service Training Program 2"
+                "NSTP 101 - National Service Training Program 1"
         });
 
-        // Second Year Subjects
+        // Second Year Subjects (First Semester Only)
         subjects.put("Second Year", new String[]{
                 "SOCIO 101 - The Contemporary World",
-                "STS 101 - Science, Technology & Society",
                 "RIZAL 101 - Life, Works & Writings of Dr. Jose Rizal",
-                "PHILO 101 - Ethics",
                 "CC-DIGILOG21 - Digital Logic Design",
-                "CC-QUAMETH22 - Quantitative Methods w/ Prob. Stat.",
                 "IT-OOPROG21 - Object Oriented Programming",
-                "IT-PLATECH22 - Platform Technologies w/ Op. Sys.",
                 "IT-SAD21 - System Analysis & Design",
-                "CC-APPSDEV22 - Applications Dev't & Emerging Tech.",
                 "CC-ACCTG21 - Accounting for IT",
-                "CC-DASTRUC22 - Data Structures & Algorithms",
                 "CC-TWRITE21 - Technical Writing & Presentation Skills in IT",
-                "CC-DATACOM22 - Data Communications",
-                "PE 103 - Sports and Dance (PATHFit 3)",
-                "PE 104 - Sports/Outdoor Adventure (PATHFit 4)"
+                "PE 103 - Sports and Dance (PATHFit 3)"
         });
 
-        // Third Year Subjects
+        // Third Year Subjects (First Semester Only)
         subjects.put("Third Year", new String[]{
                 "IT-IMDBSYS31 - Information Management (DB Sys. 1)",
-                "IT-IMDBSYS32 - Information Management (DB Sys. 2)",
                 "IT-NETWORK31 - Computer Networks",
-                "IT-INFOSEC32 - Information Assurance & Security",
                 "IT-TESTQUA31 - Testing & Quality Assurance",
-                "IT-SYSARCH32 - System Integration & Architecture",
                 "CC-HCI31 - Human Computer Interaction",
-                "CC-TECHNO32 - Technopreneurship",
                 "CC-RESCOM31 - Methods of Research in Computing",
-                "IT-INTPROG32 - Integrative Prog'g & Technologies",
                 "IT-EL_ _ _ _ _ _ - IT Elective 1",
-                "IT-SYSADMN32 - Systems Administration & Maintenance",
-                "IT-FRE_ _ _ _ _ - Free Elective 1",
-                "IT-EL_ _ _ _ _ _ - IT Elective 2",
-                "IT-FRE_ _ _ _ _ - Free Elective 2",
-                "IT-FRE_ _ _ _ _ - Free Elective 3"
+                "IT-SYSADMN32 - Systems Administration & Maintenance"
         });
 
-        // Fourth Year Subjects
+        // Fourth Year Subjects (First Semester Only)
         subjects.put("Fourth Year", new String[]{
                 "IT-CPSTONE30 - Capstone Project 1",
                 "CC-PROFIS10 - Professional Issues in Computing",
                 "LIT 11 - Literatures of the World",
-                "CC-PRACT40 - Practicum",
-                "IT-CPSTONE40 - Capstone Project 2",
                 "IT-EL_ _ _ _ _ _ - IT Elective 3",
-                "IT-EL_ _ _ _ _ _ - IT Elective 4",
                 "IT-FRE_ _ _ _ _ - Free Elective 4"
         });
     }
@@ -411,6 +410,9 @@ public class EnrollmentFrame extends JFrame {
                     "\nEnrolled Subjects: " + getSubjects(yearLevel) +
                     "\nGenerated Username: " + username +
                     "\nGenerated Password: " + password);
+
+            // Refresh the studentBox dropdown in the Grades Panel
+            refreshStudentBox();
         }
 
         private String getSubjects(String yearLevel) {
@@ -525,7 +527,7 @@ public class EnrollmentFrame extends JFrame {
         }
     }
 
-    private class StudentDashboard extends JFrame {
+    public static class StudentDashboard extends JFrame {
         public StudentDashboard(String name, String yearLevel) {
             setTitle("Student Dashboard - " + name);
             setSize(400, 300);
@@ -539,7 +541,7 @@ public class EnrollmentFrame extends JFrame {
             }
 
             String[] enrolledSubjects = subjects.getOrDefault(yearLevel, new String[]{"No subjects available"});
-            String grades = getGradesForStudent(studentUsernames.get(name));
+            String grades = EnrollmentFrame.getGradesForStudent(studentUsernames.get(name)); // Use static method
             JTextArea subjectArea = new JTextArea("Enrolled Subjects:\n" + String.join("\n", enrolledSubjects) + "\n\nGrades:\n" + grades);
             subjectArea.setBackground(new Color(40, 40, 40));
             subjectArea.setForeground(Color.WHITE);
@@ -553,7 +555,6 @@ public class EnrollmentFrame extends JFrame {
             logoutButton.setFocusPainted(false);
             logoutButton.addActionListener(e -> {
                 dispose();
-                EnrollmentFrame.this.dispose();
                 SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
             });
             add(logoutButton, BorderLayout.SOUTH);
